@@ -310,7 +310,7 @@ public class OrdenCompraService {
             return false;
         }
         return authentication.getAuthorities().stream()
-                .anyMatch(auth -> "ADMINISTRADOR".equalsIgnoreCase(auth.getAuthority()));
+                .anyMatch(auth -> "ROLE_ADMINISTRADOR".equalsIgnoreCase(auth.getAuthority()));
     }
 
     private OrdenCompraResponseDto mapToResponse(Ordenes_Compra orden) {

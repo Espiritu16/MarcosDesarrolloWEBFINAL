@@ -186,7 +186,6 @@ function accionesPorEstado(orden) {
     const acciones = [];
     const rol = (sessionStorage.getItem('userRole') || '').toUpperCase();
     const esAdmin = rol === 'ADMINISTRADOR';
-
     if (estado === 'Pendiente' && esAdmin) {
         acciones.push(btnAccion('btn-aprobar', id, 'Aprobar', 'bi-check-lg', 'btn-success'));
     }
@@ -199,8 +198,10 @@ function accionesPorEstado(orden) {
     if (estado === 'PorConfirmar' && (esAdmin || rol === 'VENDEDOR')) {
         acciones.push(btnAccion('btn-confirmar', id, 'Confirmar recepción', 'bi-check2-circle', 'btn-outline-success'));
     }
-    if (estado !== 'Recibida' && esAdmin) {
+    if (estado === 'Rechazada' && esAdmin) {
         acciones.push(btnAccion('btn-cancelar btn-eliminar', id, 'Cancelar', 'bi-x-circle', 'btn-outline-warning'));
+    }
+    if(estado==='Cancelada' && esAdmin){
         acciones.push(btnAccion('btn-rechazar btn-eliminar', id, 'Rechazar', 'bi-ban', 'btn-outline-danger'));
     }
     return acciones.join('');
