@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Órdenes de compra - Vendedor</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/tarjetas.css">
+    <link rel="stylesheet" href="../css/sidebar.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+<body>
+<div class="layout">
+    <label for="nav-toggle" class="d-none">Selecciona el toggle</label>
+    <input type="checkbox" id="nav-toggle" class="d-none">
+    <label for="nav-toggle" id="overlay"></label>
+    <header class="d-md-none position-sticky top-0 z-3 bg-dark text-white">
+        <label for="nav-toggle" class="btn btn-link text-white m-2 p-0">
+            <i class="bi bi-list" style="font-size: 1.75rem;"></i>
+        </label>
+    </header>
+
+    <div th:replace="fragments/Vendedor/sidebarVendedor"></div>
+
+    <div class="main">
+        <div th:replace="fragments/header"></div>
+
+        <main class="app-content">
+            <div id="page-content-wrapper" class="p-4 flex-grow-1">
+                <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
+                    <h1 class="mb-0 flex-grow-1">Órdenes de compra</h1>
+
+                    <div class="input-group" style="max-width: 320px;">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" id="buscarOrden" class="form-control" placeholder="Buscar por proveedor...">
+                    </div>
+
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                            Filtros
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-end p-3" style="min-width: 300px;">
+                            <div class="mb-3">
+                                <label class="small text-muted mb-1">Rango de fechas</label>
+                                <div class="d-flex gap-2">
+                                    <input type="date" id="filtroFechaInicioCompra" class="form-control form-control-sm">
+                                    <input type="date" id="filtroFechaFinCompra" class="form-control form-control-sm">
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-outline-secondary w-100" id="btnLimpiarFiltrosCompras">Limpiar filtros</button>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-outline-success" id="btnReporteCompras">
+                        <i class="bi bi-graph-up me-1"></i>Reporte mensual
+                    </button>
+
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                            data-bs-target="#ordenModal" id="btnNuevaOrden">
+                        <i class="bi bi-plus-circle me-2"></i>Registrar nueva compra
+                    </button>
+                </div>
+
+                <ul class="nav nav-pills mb-3" id="ordenTabs" role="tablist">
+                    <li class="nav-item" role="presentation"><button class="nav-link active" data-estado="Pendiente" data-bs-toggle="pill">Pendientes</button></li>
+                    <li class="nav-item" role="presentation"><button class="nav-link" data-estado="Aprobada" data-bs-toggle="pill">Aprobadas</button></li>
+                    <li class="nav-item" role="presentation"><button class="nav-link" data-estado="EnEnvio" data-bs-toggle="pill">En envío</button></li>
+                    <li class="nav-item" role="presentation"><button class="nav-link" data-estado="PorConfirmar" data-bs-toggle="pill">Por confirmar</button></li>
+                    <li class="nav-item" role="presentation"><button class="nav-link" data-estado="Recibida" data-bs-toggle="pill">Recibidas</button></li>
+                    <li class="nav-item" role="presentation"><button class="nav-link" data-estado="Rechazada" data-bs-toggle="pill">Rechazadas</button></li>
+                    <li class="nav-item" role="presentation"><button class="nav-link" data-estado="Cancelada" data-bs-toggle="pill">Canceladas</button></li>
+                </ul>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="kpi kpi-blue">
+                            <div class="kpi-icon"><i class="bi bi-hourglass-split"></i></div>
+                            <div class="kpi-body">
+                                <div class="kpi-title">Pendientes</div>
+                                <div class="kpi-value fs-4 fw-semibold" id="kpiPendientes">—</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="kpi kpi-green">
+                            <div class="kpi-icon"><i class="bi bi-check2-circle"></i></div>
+                            <div class="kpi-body">
+                                <div class="kpi-title">Aprobadas/En envío</div>
+                                <div class="kpi-value fs-4 fw-semibold" id="kpiEnProceso">—</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="kpi kpi-purple">
+                            <div class="kpi-icon"><i class="bi bi-box2-heart"></i></div>
+                            <div class="kpi-body">
+                                <div class="kpi-title">Recibidas</div>
+                                <div class="kpi-value fs-4 fw-semibold" id="kpiRecibidas">—</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="kpi kpi-gray">
+                            <div class="kpi-icon"><i class="bi bi-x-octagon"></i></div>
+                            <div class="kpi-body">
+                                <div class="kpi-title">Rech/Canceladas</div>
+                                <div class="kpi-value fs-4 fw-semibold" id="kpiCanceladas">—</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card card-soft shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h5 class="card-title mb-0" id="tituloTabla">Órdenes</h5>
+                            <div class="text-muted small" id="comprasResumen">Sin registros para mostrar</div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-striped align-middle" id="tablaCompras">
+                                <thead>
+                                <tr>
+                                    <th style="width: 6%;">ID</th>
+                                    <th style="width: 20%;">Proveedor</th>
+                                    <th style="width: 14%;">Fecha</th>
+                                    <th style="width: 12%;">Total</th>
+                                    <th style="width: 12%;">Estado</th>
+                                    <th style="width: 24%;">Detalle</th>
+                                    <th style="width: 12%;">Acciones</th>
+                                </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<div class="modal fade" id="ordenModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalLabel">Registrar/Actualizar Orden de Compra</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formOrdenCompra">
+                    <input type="hidden" id="ordenId">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Proveedor</label>
+                            <select class="form-select mb-2" id="proveedorSelect"></select>
+                            <input type="text" class="form-control d-none" id="proveedorNombre" placeholder="Nombre del proveedor">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Contacto</label>
+                            <input type="text" class="form-control" id="proveedorContacto" placeholder="Nombre del contacto">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Teléfono</label>
+                            <input type="text" class="form-control" id="proveedorTelefono" placeholder="Teléfono">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" id="proveedorEmail" placeholder="email@proveedor.com">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Fecha</label>
+                            <input type="date" class="form-control" id="fecha" required readonly>
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end justify-content-end">
+                            <div>
+                                <div class="text-muted small">Total estimado</div>
+                                <div class="fs-4 fw-semibold" id="ordenTotalLabel">S/ 0.00</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-3">
+                            <label class="form-label">Tipo ítem</label>
+                            <select class="form-select" id="detalleTipo">
+                                <option value="PRODUCTO">Producto</option>
+                                <option value="INSUMO">Insumo</option>
+                            </select>
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label">Ítem</label>
+                            <select class="form-select" id="detalleItem"></select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Cantidad</label>
+                            <input type="number" class="form-control" id="detalleCantidad" min="1" value="1">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Precio unit.</label>
+                            <input type="number" class="form-control" id="detallePrecio" min="0" step="0.01" value="0">
+                        </div>
+                        <div class="col-12">
+                            <div class="p-3 border rounded bg-light">
+                                <div class="fw-semibold" id="infoNombreItem">—</div>
+                                <div class="text-muted small" id="infoDescripcionItem">Selecciona un ítem para ver sus datos.</div>
+                                <div class="text-muted small" id="infoExtraItem"></div>
+                            </div>
+                        </div>
+                        <div class="col-12 text-end">
+                            <button type="button" class="btn btn-outline-primary" id="btnAgregarDetalle">
+                                <i class="bi bi-plus-lg me-1"></i>Agregar ítem
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive mt-3">
+                        <table class="table table-sm table-hover" id="tablaDetalles">
+                            <thead>
+                            <tr>
+                                <th>Tipo</th>
+                                <th>Ítem</th>
+                                <th class="text-end">Cantidad</th>
+                                <th class="text-end">Precio unit.</th>
+                                <th class="text-end">Subtotal</th>
+                                <th class="text-center">Acciones</th>
+                            </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-success">Guardar orden</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="recepcionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar recepción</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="recepcionOrdenId">
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle" id="tablaRecepcion">
+                        <thead>
+                        <tr>
+                            <th>Ítem</th>
+                            <th>Tipo</th>
+                            <th class="text-end">Solicitado</th>
+                            <th class="text-end">Recibido</th>
+                        </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success" id="btnConfirmarRecepcion">Confirmar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../js/compras.js"></script>
+<script src="../js/auth.js"></script>
+<script src="../js/logout.js"></script>
+</body>
+</html>

@@ -27,4 +27,9 @@ public class VendedorController {
     public String insumos() {
         return "Vendedor/Ventas_Insumos"; 
     }
+
+    @GetMapping("/compras")
+    public String compras() {
+        return "Vendedor/compras_vendedor";
+    }
 }

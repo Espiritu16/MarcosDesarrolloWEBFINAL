@@ -1,67 +1,215 @@
 <!DOCTYPE html>
 <html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Insumos</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../css/tarjetas.css" />
+    <link rel="stylesheet" href="../css/sidebar.css" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet" />
+  </head>
 
-<head>
-  <meta charset="UTF-8" />
-  <title>Consulta de Insumos - EstilosPE</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <body>
+    <div class="layout">
+      <label for="nav-toggle" class="d-none">Botón</label>
+      <input type="checkbox" id="nav-toggle" class="d-none" />
+      <label for="nav-toggle" id="overlay"></label>
+      <header class="d-md-none position-sticky top-0 z-3 bg-dark text-white">
+        <label for="nav-toggle" class="btn btn-link text-white m-2 p-0">
+          <i class="bi bi-list" style="font-size: 1.75rem"></i>
+        </label>
+      </header>
 
-  <!-- Dependencias CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet" />
+      <div th:replace="fragments/Vendedor/sidebarVendedor"></div>
 
-  <!-- Estilos Propios -->
-  <link rel="stylesheet" href="../css/sidebar.css">
-  <link rel="stylesheet" href="../css/tarjetas.css">
-</head>
+      <div class="main">
+        <div th:replace="fragments/header"></div>
 
-<body>
-  <div class="layout">
-    <!-- Sidebar del Vendedor -->
-    <div th:replace="fragments/Vendedor/sidebarVendedor"></div>
+        <main class="app-content">
+          <div class="container-fluid">
+            <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
+              <h2 class="m-0 flex-grow-1">Insumos</h2>
 
-    <!-- Contenido Principal -->
-    <div class="main">
-     <!-- Header -->
-     <div th:replace="fragments/header"></div>
-      <main class="app-content p-4">
-        <!-- El botón 'btn-crear' será ocultado por auth.js para el rol Vendedor -->
-        <div class="d-flex mb-3">
-          <button type="button" class="btn btn-primary btn-crear" id="btnNuevoInsumo" data-bs-toggle="modal" data-bs-target="#modalInsumo">
-            <i class="bi bi-plus-circle me-2"></i>Registrar Nuevo Insumo
-          </button>
-        </div>
+              <div class="input-group" style="max-width: 320px">
+                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                <input type="text" id="buscarInsumo" class "form-control" placeholder="Buscar insumo…" />
+              </div>
 
-        <div class="card shadow-sm">
-          <div class="card-body">
-            <h5 class="card-title">Listado de Insumos</h5>
-            <div class="table-responsive">
-              <table class="table table-striped table-hover" id="tablaInsumos">
-                <thead>
+              <select id="filtroEstadoInsumo" class="form-select w-auto">
+                <option value="">Estado: Todos</option>
+                <option value="Activo">Activos</option>
+                <option value="Inactivo">Inactivos</option>
+              </select>
+
+              <select id="filtroStockInsumo" class="form-select w-auto">
+                <option value="">Stock: Todos</option>
+                <option value="bajo">Stock bajo (≤20)</option>
+                <option value="suficiente">Suficiente</option>
+              </select>
+
+              <button type="button" class="btn btn-primary btn-crear" data-bs-toggle="modal" data-bs-target="#modalInsumoCrear">
+                <i class="bi bi-plus-lg me-1"></i> Nuevo insumo
+              </button>
+            </div>
+
+            <ul class="nav nav-pills mb-3" id="insumoEstadoTabs">
+              <li class="nav-item"><button class="nav-link active" data-estado="Activo">Activos</button></li>
+              <li class="nav-item"><button class="nav-link" data-estado="Inactivo">Inactivos</button></li>
+              <li class="nav-item"><button class="nav-link" data-estado="">Todos</button></li>
+            </ul>
+
+            <div class="row g-3 mb-3">
+              <div class="col-sm-6 col-lg-3">
+                <div class="kpi kpi-green">
+                  <div class="kpi-icon"><i class="bi bi-box-seam"></i></div>
+                  <div class="kpi-body">
+                    <div class="kpi-title">Total insumos</div>
+                    <div class="kpi-value fs-4 fw-semibold" id="kpiTotalInsumos">—</div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-sm-6 col-lg-3">
+                <div class="kpi kpi-red">
+                  <div class="kpi-icon"><i class="bi bi-exclamation-triangle"></i></div>
+                  <div class="kpi-body">
+                    <div class="kpi-title">Stock bajo</div>
+                    <div class="kpi-value fs-4 fw-semibold text-warning" id="kpiStockBajo">—</div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-sm-6 col-lg-3">
+                <div class="kpi kpi-blue">
+                  <div class="kpi-icon"><i class="bi bi-check2-circle"></i></div>
+                  <div class="kpi-body">
+                    <div class="kpi-title">Activos</div>
+                    <div class="kpi-value fs-4 fw-semibold" id="kpiActivos">—</div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-sm-6 col-lg-3">
+                <div class="kpi kpi-gray">
+                  <div class="kpi-icon"><i class="bi bi-archive"></i></div>
+                  <div class="kpi-body">
+                    <div class="kpi-title">Inactivos</div>
+                    <div class="kpi-value fs-4 fw-semibold" id="kpiInactivos">—</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card card-soft overflow-auto">
+              <table class="table align-middle mb-0">
+                <thead class="table-sticky">
                   <tr>
-                    <th>ID</th>
+                    <th style="width: 70px">ID</th>
                     <th>Insumo</th>
-                    <th>Categoría</th>
-                    <th>Stock</th>
-                    <th>Estado</th>
-                    <!-- La columna 'col-acciones' será ocultada por auth.js para el rol Vendedor -->
-                    <th class="col-acciones">Acciones</th>
+                    <th style="width: 160px">Unidad</th>
+                    <th style="width: 140px">Stock</th>
+                    <th style="width: 130px">Estado</th>
+                    <th style="width: 160px" class="col-acciones">Acciones</th>
                   </tr>
                 </thead>
-                <tbody></tbody>
+                <tbody id="tablaInsumosBody">
+                  <tr>
+                    <td colspan="6" class="text-center text-muted py-4">Cargando insumos…</td>
+                  </tr>
+                </tbody>
               </table>
             </div>
           </div>
-        </div>
-      </main>
+
+          <div class="modal fade" id="modalInsumoCrear" tabindex="-1" aria-labelledby="modalInsumoCrearLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content card-soft">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="modalInsumoCrearLabel">Nuevo insumo</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                  <form id="formCrearInsumo">
+                    <div class="row g-3">
+                      <div class="col-12">
+                        <label class="form-label">Nombre</label>
+                        <select id="insumoNombreSelect" class="form-select mb-2"></select>
+                        <input type="text" id="insumoNombreCustom" class="form-control d-none" placeholder="Escribe el nombre del insumo" />
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label">Unidad de medida</label>
+                        <input type="text" id="insumoUnidad" class="form-control" placeholder="metros, kg, unidades" />
+                      </div>
+                      <div class="col-md-3">
+                        <label class="form-label">Stock</label>
+                        <input id="insumoStock" type="number" min="0" class="form-control" placeholder="0" />
+                      </div>
+                      <div class="col-md-3">
+                        <label class="form-label">Estado</label>
+                        <select class="form-select" id="insumoEstado">
+                          <option value="Activo" selected>Activo</option>
+                          <option value="Inactivo">Inactivo</option>
+                        </select>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+                <div class="modal-footer d-flex justify-content-between">
+                  <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                  <button class="btn btn-primary btn-crear" id="btnGuardarInsumo" type="button">
+                    Guardar
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal fade" id="modalInsumoEditar" tabindex="-1" aria-labelledby="modalInsumoEditarLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content card-soft">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="modalInsumoEditarLabel">Editar insumo</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                  <form id="formEditarInsumo">
+                    <input type="hidden" id="insumoIdEditar" />
+                    <div class="row g-3">
+                      <div class="col-12">
+                        <label class="form-label">Nombre</label>
+                        <select id="insumoNombreSelectEditar" class="form-select mb-2"></select>
+                        <input id="insumoNombreEditar" type="text" class="form-control d-none" placeholder="Ej. Tela denim 10oz" />
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label">Unidad de medida</label>
+                        <input id="insumoUnidadEditar" type="text" class="form-control" placeholder="metros, kg, unidades" />
+                      </div>
+                      <div class="col-md-3">
+                        <label class="form-label">Stock</label>
+                        <input id="insumoStockEditar" type="number" min="0" class="form-control" placeholder="0" />
+                      </div>
+                      <div class="col-md-3">
+                        <label class="form-label">Estado</label>
+                        <select class="form-select" id="insumoEstadoEditar">
+                          <option value="Activo">Activo</option>
+                          <option value="Inactivo">Inactivo</option>
+                        </select>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+                <div class="modal-footer d-flex justify-content-between">
+                  <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                  <button class="btn btn-primary btn-editar" id="btnActualizarInsumo">Guardar</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
     </div>
-  </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="../js/auth.js"></script>
-  <script src="../js/logout.js"></script>
-  <script src="../js/insumos.js"></script>
-</body>
-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/logout.js"></script>
+    <script src="../js/insumos.js"></script>
+  </body>
 </html>
