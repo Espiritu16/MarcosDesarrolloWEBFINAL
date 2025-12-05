@@ -10,7 +10,7 @@ public class RolResponseDto {
     private long usuariosAsignados;
     private LocalDateTime fechaCreacion;
     private List<PermisoResponseDto> permisos;
-    private LocalDateTime ultimaActualizacion;
+    private LocalDateTime fechaActualizacion;
     private String actualizadoPor;
     private List<String> usuarios;
     private long usuariosActivos;
@@ -64,12 +64,12 @@ public class RolResponseDto {
         this.permisos = permisos;
     }
 
-    public LocalDateTime getUltimaActualizacion() {
-        return ultimaActualizacion;
+    public LocalDateTime getFechaActualizacion() {
+        return fechaActualizacion;
     }
 
-    public void setUltimaActualizacion(LocalDateTime ultimaActualizacion) {
-        this.ultimaActualizacion = ultimaActualizacion;
+    public void setFechaActualizacion(LocalDateTime fechaActualizacion) {
+        this.fechaActualizacion = fechaActualizacion;
     }
 
     public String getActualizadoPor() {

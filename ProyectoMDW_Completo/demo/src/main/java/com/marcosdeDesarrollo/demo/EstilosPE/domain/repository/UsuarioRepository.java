@@ -17,4 +17,5 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
     List<Usuario> findByRol_Id(Integer idRol);
 
     long countByRol_IdAndEstado(Integer idRol, Estado estado);
+    boolean existsByEmailAndIdNot(String email, Integer id);
 }

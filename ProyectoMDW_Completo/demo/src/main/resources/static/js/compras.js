@@ -188,15 +188,23 @@ function accionesPorEstado(orden) {
     const esAdmin = rol === 'ADMINISTRADOR';
     if (estado === 'Pendiente' && esAdmin) {
         acciones.push(btnAccion('btn-aprobar', id, 'Aprobar', 'bi-check-lg', 'btn-success'));
+        acciones.push(btnAccion('btn-cancelar btn-eliminar', id, 'Cancelar', 'bi-x-circle', 'btn-outline-warning'));
+        acciones.push(btnAccion('btn-rechazar btn-eliminar', id, 'Rechazar', 'bi-ban', 'btn-outline-danger'));
     }
     if (estado === 'Aprobada' && (esAdmin || rol === 'VENDEDOR')) {
         acciones.push(btnAccion('btn-enviar', id, 'Marcar en envío', 'bi-truck', 'btn-primary'));
+        acciones.push(btnAccion('btn-cancelar btn-eliminar', id, 'Cancelar', 'bi-x-circle', 'btn-outline-warning'));
+        acciones.push(btnAccion('btn-rechazar btn-eliminar', id, 'Rechazar', 'bi-ban', 'btn-outline-danger'));
     }
     if (estado === 'EnEnvio' && (esAdmin || rol === 'VENDEDOR')) {
         acciones.push(btnAccion('btn-porconfirmar', id, 'Listo para confirmar', 'bi-hourglass-split', 'btn-outline-primary'));
+        acciones.push(btnAccion('btn-cancelar btn-eliminar', id, 'Cancelar', 'bi-x-circle', 'btn-outline-warning'));
+        acciones.push(btnAccion('btn-rechazar btn-eliminar', id, 'Rechazar', 'bi-ban', 'btn-outline-danger'));
     }
     if (estado === 'PorConfirmar' && (esAdmin || rol === 'VENDEDOR')) {
         acciones.push(btnAccion('btn-confirmar', id, 'Confirmar recepción', 'bi-check2-circle', 'btn-outline-success'));
+        acciones.push(btnAccion('btn-cancelar btn-eliminar', id, 'Cancelar', 'bi-x-circle', 'btn-outline-warning'));
+        acciones.push(btnAccion('btn-rechazar btn-eliminar', id, 'Rechazar', 'bi-ban', 'btn-outline-danger'));
     }
     if (estado === 'Rechazada' && esAdmin) {
         acciones.push(btnAccion('btn-cancelar btn-eliminar', id, 'Cancelar', 'bi-x-circle', 'btn-outline-warning'));

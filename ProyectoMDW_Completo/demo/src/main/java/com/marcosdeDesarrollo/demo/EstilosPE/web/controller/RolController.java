@@ -17,14 +17,7 @@ import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/roles")
@@ -108,7 +101,7 @@ public class RolController {
     public ResponseEntity<?> actualizar(
             @Parameter(description = "ID del rol a actualizar", required = true, example = "1")
             @PathVariable Integer id,
-            
+
             @Parameter(description = "Nuevos datos del rol", required = true)
             @RequestBody RolRequestDto request) {
         try {
@@ -119,22 +112,17 @@ public class RolController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
-
-    @Operation(
-        summary = "Intentar inactivar rol", 
-        description = "Los roles no pueden eliminarse ni desactivarse por políticas de seguridad del sistema"
-    )
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "405", description = "Método no permitido - Los roles son permanentes"),
-        @ApiResponse(responseCode = "401", description = "No autorizado")
-    })
-    @PutMapping("/{id}/inactivar")
-    public ResponseEntity<Map<String, String>> inactivarNoDisponible(
-            @Parameter(description = "ID del rol", required = true, example = "1")
-            @PathVariable Integer id) {
-        Map<String, String> body = new HashMap<>();
-        body.put("error", "Los roles no pueden eliminarse ni desactivarse desde la aplicación.");
-        body.put("motivo", "Política de seguridad: Los roles son elementos permanentes del sistema.");
-        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(body);
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> eliminar(@PathVariable Integer id) {
+        try {
+            rolService.eliminar(id);
+            return ResponseEntity.ok(Map.of("mensaje", "Rol eliminado correctamente"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error al eliminar el rol"));
+        }
     }
 }

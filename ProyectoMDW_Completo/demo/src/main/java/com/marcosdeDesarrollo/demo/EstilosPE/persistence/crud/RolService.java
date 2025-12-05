@@ -3,18 +3,13 @@ package com.marcosdeDesarrollo.demo.EstilosPE.persistence.crud;
 import com.marcosdeDesarrollo.demo.EstilosPE.domain.dto.PermisoResponseDto;
 import com.marcosdeDesarrollo.demo.EstilosPE.domain.dto.RolRequestDto;
 import com.marcosdeDesarrollo.demo.EstilosPE.domain.dto.RolResponseDto;
-import com.marcosdeDesarrollo.demo.EstilosPE.persistence.entity.Auditoria;
-import com.marcosdeDesarrollo.demo.EstilosPE.persistence.entity.Estado;
-import com.marcosdeDesarrollo.demo.EstilosPE.persistence.entity.Permiso;
-import com.marcosdeDesarrollo.demo.EstilosPE.persistence.entity.Rol;
-import com.marcosdeDesarrollo.demo.EstilosPE.persistence.entity.Usuario;
-import com.marcosdeDesarrollo.demo.EstilosPE.persistence.entity.TipoOperacion;
+import com.marcosdeDesarrollo.demo.EstilosPE.domain.dto.UsuarioResponseDto;
+import com.marcosdeDesarrollo.demo.EstilosPE.persistence.entity.*;
 import com.marcosdeDesarrollo.demo.EstilosPE.domain.repository.PermisoRepository;
 import com.marcosdeDesarrollo.demo.EstilosPE.domain.repository.AuditoriaRepository;
 import com.marcosdeDesarrollo.demo.EstilosPE.domain.repository.RolRepository;
 import com.marcosdeDesarrollo.demo.EstilosPE.domain.repository.UsuarioRepository;
 import com.marcosdeDesarrollo.demo.EstilosPE.domain.service.AuditoriaService;
-import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -107,10 +102,7 @@ public class RolService {
                 .count());
         dto.setPermisos(mapPermisos(rol.getPermisos()));
         Auditoria ultimaAuditoria = obtenerAuditoriaReciente(rol.getId());
-        LocalDateTime ultimaActualizacion = (ultimaAuditoria != null
-                && ultimaAuditoria.getTipoOperacion() == TipoOperacion.UPDATE)
-                ? ultimaAuditoria.getFecha() : null;
-        dto.setUltimaActualizacion(ultimaActualizacion != null ? ultimaActualizacion : rol.getFechaCreacion());
+        dto.setFechaActualizacion(rol.getFechaActualizacion());
         dto.setActualizadoPor(obtenerNombreUsuario(ultimaAuditoria));
         return dto;
     }
@@ -179,7 +171,30 @@ public class RolService {
         datos.put("fechaCreacion", rol.getFechaCreacion());
         return datos;
     }
-
+    public void eliminar(Integer id) {
+        Rol rol = rolRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("El rol especificado no existe"));
+        // 🔥 VALIDACIÓN 1: No eliminar roles del sistema
+        String nombreRol = rol.getNombre().toUpperCase();
+        if (nombreRol.equals("ADMINISTRADOR") ||
+                nombreRol.equals("VENDEDOR") ||
+                nombreRol.equals("CONTADOR")) {
+            throw new IllegalArgumentException("No se pueden eliminar los roles del sistema");
+        }
+        List<Usuario> usuariosConRol = usuarioRepository.findByRol_Id(id);
+        if (!usuariosConRol.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "No se puede eliminar el rol porque tiene " + usuariosConRol.size() +
+                            " usuario(s) asignado(s). Primero reasigna los usuarios a otro rol."
+            );
+        }
+        Map<String, Object> datosAnteriores = construirDatosAuditoria(rol);
+        // 🔥 Eliminar de la BD
+        rolRepository.deleteById(id);
+        // 🔥 Registrar en auditoría
+        auditoriaService.registrarDelete("roles", id, datosAnteriores,
+                "Eliminación física de rol");
+    }
     private String obtenerNombreUsuario(Auditoria auditoria) {
         if (auditoria == null) {
             return "Sistema";

@@ -14,6 +14,7 @@ const rolModalElement = document.getElementById('rolModal');
 const rolModal = rolModalElement ? new bootstrap.Modal(rolModalElement) : null;
 const modalTitle = document.getElementById('modalLabel');
 const inputNombre = document.getElementById('nombreRol');
+const formRol2=document.getElementById('formRol2');
 const inputDescripcion = document.getElementById('descripcionRol');
 const inputRolId = document.getElementById('rolId');
 const checklistPermisos = document.getElementById('permisosChecklist');
@@ -106,8 +107,7 @@ function renderRoles() {
     infoRegistros.textContent = `Sin registros para la pestaña seleccionada (Total: ${roles.length})`;
     return;
   }
-
-  filtrados.forEach((rol) => {
+filtrados.forEach((rol) => {
     const row = document.createElement('tr');
     row.innerHTML = `
       <td class="fw-semibold">${rol.nombre}</td>
@@ -115,19 +115,25 @@ function renderRoles() {
       <td class="text-center">${rol.usuariosAsignados}</td>
       <td class="col-usuarios">${formatearUsuarios(rol.usuarios)}</td>
       <td>${formatoFecha(rol.fechaCreacion)}</td>
-      <td>${formatoFecha(rol.ultimaActualizacion)}</td>
+      <td>${formatoFecha(rol.fechaActualizacion)}</td>
       <td>${rol.actualizadoPor ? rol.actualizadoPor : '—'}</td>
       <td class="d-flex gap-2">
-        <button type="button" class="btn btn-sm btn-outline-secondary" data-accion="editar">Editar</button>
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-accion="editar">
+          <i class="bi bi-pencil"></i> Editar
+        </button>
+        <button type="button" class="btn btn-sm btn-outline-danger" data-accion="eliminar">
+          <i class="bi bi-trash"></i> Eliminar
+        </button>
       </td>
     `;
+    // Event listeners
     row.querySelector('[data-accion="editar"]').addEventListener('click', () => abrirModalEdicion(rol));
+    row.querySelector('[data-accion="eliminar"]').addEventListener('click', () => eliminarRol(rol.id, rol.nombre));
     if (!mostrarColUsuarios) {
       row.querySelectorAll('.col-usuarios').forEach(td => td.style.display = 'none');
     }
     tablaBody.appendChild(row);
   });
-
   infoRegistros.textContent = `Mostrando ${filtrados.length} rol${filtrados.length === 1 ? '' : 'es'} (de ${roles.length})`;
   actualizarKpisRoles();
 }
@@ -149,6 +155,7 @@ async function cargarRoles() {
 function abrirModalCreacion() {
   rolEnEdicion = null;
   formRol.reset();
+  inputNombre.value='';
   inputRolId.value = '';
   modalTitle.textContent = 'Crear rol';
   if (inputNombre) {
@@ -163,19 +170,7 @@ function abrirModalCreacion() {
 function abrirModalEdicion(rol) {
   rolEnEdicion = rol;
   inputRolId.value = rol.id;
-  if (inputNombre) {
-    const valorOriginal = rol.nombre || '';
-    const valor = valorOriginal.toUpperCase();
-    let optionExiste = Array.from(inputNombre.options).some(opt => opt.value === valor);
-    if (!optionExiste && valor) {
-      const nuevaOpcion = document.createElement('option');
-      nuevaOpcion.value = valor;
-      nuevaOpcion.textContent = valorOriginal || valor;
-      inputNombre.appendChild(nuevaOpcion);
-      optionExiste = true;
-    }
-    inputNombre.value = optionExiste ? valor : '';
-  }
+  inputNombre.value=rol.nombre;
   inputDescripcion.value = rol.descripcion || '';
   modalTitle.textContent = 'Editar rol';
   const seleccionados = (rol.permisos || []).map((permiso) => permiso.id);
@@ -184,7 +179,35 @@ function abrirModalEdicion(rol) {
     rolModal.show();
   }
 }
+async function eliminarRol(id, nombreRol) {
+  const mensaje = `⚠️ ADVERTENCIA\n\n` +
+                  `Estás a punto de eliminar permanentemente el rol "${nombreRol}".\n\n` +
+                  `Esta acción NO se puede deshacer.\n\n` +
+                  `¿Estás seguro de continuar?`;
 
+  if (!confirm(mensaje)) {
+    return;
+  }
+
+  try {
+    const response = await fetchConToken(`${ROLES_API}/${id}`, {
+      method: 'DELETE'
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Error al eliminar el rol');
+    }
+
+    const result = await response.json();
+    mostrarMensaje(result.mensaje || 'Rol eliminado correctamente', 'success');
+    await cargarRoles(); // Recargar la tabla
+
+  } catch (error) {
+    console.error('❌ Error al eliminar rol:', error);
+    mostrarMensaje(error.message, 'danger');
+  }
+}
 async function guardarRol(event) {
   event.preventDefault();
 

@@ -55,7 +55,9 @@ public class AuditoriaService {
             logger.error("Error registrando auditoría para tabla {} id {}", tabla, idRegistro, ex);
         }
     }
-
+    public void registrarDelete(String tabla, Integer idRegistro, Object datosAnteriores, String detalle) {
+        registrar(tabla, idRegistro, TipoOperacion.DELETE, datosAnteriores, null, detalle);
+    }
     private String toJson(Object data) {
         if (data == null) {
             return null;

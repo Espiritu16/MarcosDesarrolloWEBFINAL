@@ -22,51 +22,41 @@ public class Rol {
 
     @Column(name = "fecha_creacion", insertable = false, updatable = false)
     private LocalDateTime fechaCreacion;
-
+    @Column(name="fecha_actualizacion", insertable = false, updatable = false)
+    private LocalDateTime fechaActualizacion;
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "rol_permisos",
             joinColumns = @JoinColumn(name = "id_rol"),
             inverseJoinColumns = @JoinColumn(name = "id_permiso"))
     private Set<Permiso> permisos = new HashSet<>();
-
-
     public Integer getId() {
         return id;
     }
-
     public void setId(Integer id) {
         this.id = id;
     }
-
     public String getNombre() {
         return nombre;
     }
-
     public void setNombre(String nombre) {
         this.nombre = nombre;
     }
-
     public String getDescripcion() {
         return descripcion;
     }
-
     public void setDescripcion(String descripcion) {
         this.descripcion = descripcion;
     }
-
     public LocalDateTime getFechaCreacion() {
         return fechaCreacion;
     }
-
-    public void setFechaCreacion(LocalDateTime fechaCreacion) {
-        this.fechaCreacion = fechaCreacion;
-    }
-
     public Set<Permiso> getPermisos() {
         return permisos;
     }
-
     public void setPermisos(Set<Permiso> permisos) {
         this.permisos = permisos;
+    }
+    public LocalDateTime getFechaActualizacion(){
+        return fechaActualizacion;
     }
 }
