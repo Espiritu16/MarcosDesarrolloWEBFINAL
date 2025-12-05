@@ -57,8 +57,8 @@ public class WebSecurityConfig {
                 // ¡Solo protege las rutas /api/**
                 .securityMatcher("/api/**")
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .anyRequest().authenticated()
+                        .requestMatchers("/api/auth/**").permitAll()  // Login público
+                        .requestMatchers("/api/**").authenticated()
                 );
 
         http.authenticationProvider(authenticationProvider());

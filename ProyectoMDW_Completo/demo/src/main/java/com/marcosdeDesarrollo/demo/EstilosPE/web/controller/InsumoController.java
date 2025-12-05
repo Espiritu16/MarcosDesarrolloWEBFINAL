@@ -33,7 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/insumos")
 @CrossOrigin(origins = "*")
 @Tag(name = "Insumos", description = "Endpoints para la gestión de insumos")
-@PreAuthorize("hasAnyAuthority('ADMINISTRADOR','VENDEDOR')")
+@PreAuthorize("hasAnyRole('ADMINISTRADOR','VENDEDOR')")
 public class InsumoController {
 
     private final InsumoService insumoService;

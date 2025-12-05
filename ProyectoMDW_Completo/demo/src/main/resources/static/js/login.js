@@ -44,9 +44,13 @@ document.addEventListener("DOMContentLoaded", function() {
                     sessionStorage.setItem('jwtToken', data.token);
                     sessionStorage.setItem('userName', data.email);
                     const roleMap = {
-                        'ADMINISTRADOR': 'Administrador',
-                        'VENDEDOR': 'Vendedor',
-                        'CONTADOR': 'Contador'
+                       'ROLE_ADMINISTRADOR': 'Administrador',
+                       'ROLE_VENDEDOR': 'Vendedor',
+                       'ROLE_CONTADOR': 'Contador',
+                       // Fallback por si el backend cambia y envía sin prefijo
+                       'ADMINISTRADOR': 'Administrador',
+                       'VENDEDOR': 'Vendedor',
+                       'CONTADOR': 'Contador'
                     };
                     const rolBackend = (data.rol || '').toUpperCase();
                     const rolDisplay = roleMap[rolBackend] || data.rol || 'Sin rol';
@@ -54,14 +58,14 @@ document.addEventListener("DOMContentLoaded", function() {
                     sessionStorage.setItem('userEmail', data.email);
 
                     // --- redireccion de roles ---
-                    switch (rolBackend) {
-                        case "ADMINISTRADOR":
+                    switch (rolDisplay) {
+                        case "Administrador":
                             window.location.href = "/administrador/";
                             break;
-                        case "VENDEDOR":
+                        case "Vendedor":
                             window.location.href = "/vendedor/";
                             break;
-                        case "CONTADOR":
+                        case "Contador":
                             window.location.href = "/contador/";
                             break;
                         default:

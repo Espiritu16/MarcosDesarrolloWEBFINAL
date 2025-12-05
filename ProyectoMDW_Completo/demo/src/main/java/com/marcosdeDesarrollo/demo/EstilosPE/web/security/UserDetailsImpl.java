@@ -33,8 +33,11 @@ public class UserDetailsImpl implements UserDetails {
     public static UserDetailsImpl build(Usuario usuario) {
         // Aquí tomamos el nombre del rol (ej: "ROLE_ADMIN") y lo convertimos
         // en un objeto que Spring Security entiende.
-        GrantedAuthority authority = new SimpleGrantedAuthority(usuario.getRol().getNombre());
-
+        String roleName = usuario.getRol().getNombre();
+        if (!roleName.startsWith("ROLE_")) {
+            roleName = "ROLE_" + roleName;
+        }
+        GrantedAuthority authority = new SimpleGrantedAuthority(roleName);
         return new UserDetailsImpl(
                 usuario.getId(),
                 usuario.getEmail(),

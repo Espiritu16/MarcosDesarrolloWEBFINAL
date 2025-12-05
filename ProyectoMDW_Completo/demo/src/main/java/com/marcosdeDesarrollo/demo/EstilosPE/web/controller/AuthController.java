@@ -30,8 +30,8 @@ public class AuthController {
         this.jwtUtils = jwtUtils;
     }
 
-    @Operation(summary = "Autenticar usuario", description = "Endpoint para login de usuarios") // 👈 NUEVO
-    @ApiResponses(value = { // 👈 NUEVO
+    @Operation(summary = "Autenticar usuario", description = "Endpoint para login de usuarios") //
+    @ApiResponses(value = { //
         @ApiResponse(responseCode = "200", description = "Login exitoso", 
                     content = @Content(schema = @Schema(implementation = JwtResponse.class))),
         @ApiResponse(responseCode = "401", description = "Credenciales inválidas"),

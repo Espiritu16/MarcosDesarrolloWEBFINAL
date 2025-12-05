@@ -191,3 +191,52 @@ document.addEventListener("DOMContentLoaded", () => {
         welcomeElement.textContent = userName;
     }
 });
+(function setUpFetchInterceptor(){
+    const originalFetch=window.fetch; window.fetch = function (...args) {
+    let [url, options = {}] = args;
+    const token = sessionStorage.getItem('jwtToken');
+    // Solo añde el token si existe y la petición se envió al backend
+    const isBackendRequest =typeof url === 'string' &&
+    (url.startsWith('/') || url.includes(window.location.hostname));
+    if (token && isBackendRequest) {
+       // Asegurarse de que existe el objeto headers
+       options.headers = options.headers || {};
+       // Si headers es un objeto Headers, convertirlo a objeto plano
+       if (options.headers instanceof Headers) {
+           const headersObj = {};
+           options.headers.forEach((value, key) => {
+              headersObj[key] = value;
+           });
+           options.headers = headersObj;
+       }
+       // Añadir el token JWT SOLO si no existe ya
+       if (!options.headers['Authorization'] && !options.headers['authorization']) {
+           options.headers['Authorization'] = `Bearer ${token}`;
+           console.log(`Token JWT añadido a la petición: ${url}`);
+       }
+    }
+    // Ejecuta la petición original
+    return originalFetch(url, options).then(response => {
+        // Manejar respuestas de error de autenticación
+        if (response.status === 401 || response.status === 403) {
+              console.error('Token JWT inválido o expirado. Redirigiendo al login...');
+              // Limpia sessionStorage
+              sessionStorage.removeItem('jwtToken');
+              sessionStorage.removeItem('userName');
+              sessionStorage.removeItem('userRole');
+              sessionStorage.removeItem('userEmail');
+              // Redirige al login
+              alert('Su sesión ha expirado. Por favor, inicie sesión nuevamente.');
+              window.location.href = '/';
+              // Retornar una promesa rechazada para detener el procesamiento
+              return Promise.reject(new Error('Token expirado o inválido'));
+        }
+          return response;
+        })
+       .catch(error => {
+         console.error('Error en la petición:', error);
+         throw error;
+       });
+    };
+    console.log(' Interceptor de fetch creado. Todas las peticiones incluirán automáticamente el JWT token.');
+})();

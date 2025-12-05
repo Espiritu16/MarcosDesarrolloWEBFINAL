@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/ordenes-compra")
 @CrossOrigin(origins = "*")
 @Tag(name = "Órdenes de compra", description = "Gestión de órdenes de compra con recepción de insumos/productos")
-@PreAuthorize("hasAnyAuthority('ADMINISTRADOR','VENDEDOR')")
+@PreAuthorize("hasAnyRole('ADMINISTRADOR','VENDEDOR')")
 public class OrdenCompraController {
 
     private final OrdenCompraService ordenCompraService;
