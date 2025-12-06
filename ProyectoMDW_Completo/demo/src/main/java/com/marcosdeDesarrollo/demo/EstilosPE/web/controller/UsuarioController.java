@@ -47,5 +47,26 @@ public class UsuarioController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
-
+    @PatchMapping("/eliminar/{id}")
+    public ResponseEntity<?> desactivar(
+            @PathVariable Integer id) {
+        try {
+            return usuarioService.eliminar(id)
+                    .map(ResponseEntity::ok)
+                    .orElse(ResponseEntity.notFound().build());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+    @PatchMapping("/reactivar/{id}")
+    public ResponseEntity<?> reactivar(
+            @PathVariable Integer id) {
+        try {
+            return usuarioService.reactivar(id)
+                    .map(ResponseEntity::ok)
+                    .orElse(ResponseEntity.notFound().build());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
 }

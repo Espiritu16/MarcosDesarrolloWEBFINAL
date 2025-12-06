@@ -100,8 +100,6 @@ public class UsuarioService {
             throw new IllegalArgumentException("Ya existe un usuario con ese email");
         }
     }
-
-    // 🔥 MAP TO RESPONSE CORREGIDO
     private UsuarioResponseDto mapToResponse(Usuario usuario) {
         UsuarioResponseDto dto = new UsuarioResponseDto();
         dto.setId(usuario.getId());
@@ -111,8 +109,6 @@ public class UsuarioService {
         dto.setEstado(usuario.getEstado());
         dto.setFechaCreacion(usuario.getFechaCreacion());
         dto.setFechaActualizacion(usuario.getFechaActualizacion());
-
-        // 👈 CORREGIDO: usuario.getId() en lugar de rol.getId()
         Auditoria auditoriaUsuario = obtenerAuditoriaReciente(usuario.getId());
         dto.setActualizadoPor(obtenerNombreUsuario(auditoriaUsuario));
 
@@ -157,15 +153,12 @@ public class UsuarioService {
             if (usuario.getId().equals(idUsuarioActual)) {
                 throw new IllegalArgumentException("No puedes eliminar tu propio usuario");
             }
-
             // Validar que no esté ya inactivo
             if (usuario.getEstado() == Estado.Inactivo) {
                 throw new IllegalArgumentException("El usuario ya está inactivo");
             }
-
             // Guardar estado anterior para auditoría
             Map<String, Object> datosAnteriores = construirDatosAuditoria(usuario);
-
             // Cambiar estado a Inactivo
             usuario.setEstado(Estado.Inactivo);
 
@@ -176,6 +169,25 @@ public class UsuarioService {
                     datosAnteriores, construirDatosAuditoria(actualizado),
                     "Eliminación lógica de usuario");
 
+            return mapToResponse(actualizado);
+        });
+    }
+    public Optional<UsuarioResponseDto> reactivar (Integer id){
+        return usuarioRepository.findById(id).map(usuario -> {
+            // Validar que no sea el usuario actual
+            Integer idUsuarioActual = obtenerIdUsuarioActual();
+            if (usuario.getEstado() == Estado.Activo) {
+                throw new IllegalArgumentException("El usuario ya está activo");
+            }
+            // Guardar estado anterior para auditoría
+            Map<String, Object> datosAnteriores = construirDatosAuditoria(usuario);
+            // Cambiar estado a Inactivo
+            usuario.setEstado(Estado.Activo);
+            Usuario actualizado = usuarioRepository.save(usuario);
+            // Registrar en auditoría
+            auditoriaService.registrarUpdate("usuarios", actualizado.getId(),
+                    datosAnteriores, construirDatosAuditoria(actualizado),
+                    "Reactivación lógica de usuario");
             return mapToResponse(actualizado);
         });
     }
