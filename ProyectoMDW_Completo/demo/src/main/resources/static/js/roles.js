@@ -6,6 +6,7 @@ let roles = [];
 let usuarios = [];
 let permisosCatalogo = [];
 let rolEnEdicion = null;
+let usuarioEnEdicion=null;
 let filtroRol = 'all';
 
 const tablaBody = document.querySelector('#tablaRoles tbody');
@@ -123,7 +124,7 @@ function renderRoles() {
 
     tablaBody.appendChild(row);
   });
-
+  actualizarKpisRoles();
   infoRegistros.textContent = `Mostrando ${roles.length} rol${roles.length === 1 ? '' : 'es'}`;
 }
 function configurarTabsRol() {
@@ -193,7 +194,7 @@ function renderUsuariosPorRol(rolFiltro) {
       <td>${usuario.actualizadoPor || '—'}</td>
       <td class="d-flex gap-2">
         <button type="button" class="btn btn-sm btn-outline-secondary" data-accion="editar-usuario">
-          <i class="bi bi-pencil"></i> Editar
+          <i class="bi bi-pencil"></i> Editar usuario
         </button>
         <button type="button" class="btn btn-sm btn-outline-${usuario.estado === 'Activo' ? 'warning' : 'success'}" data-accion="cambiar-estado">
           <i class="bi bi-${usuario.estado === 'Activo' ? 'x-circle' : 'check-circle'}"></i>
@@ -209,7 +210,6 @@ function renderUsuariosPorRol(rolFiltro) {
   });
   const rolNombre = rolFiltro.charAt(0).toUpperCase() + rolFiltro.slice(1) + 'es';
   infoRegistros.textContent = `Mostrando ${usuariosFiltrados.length} usuario${usuariosFiltrados.length === 1 ? '' : 's'} - ${rolNombre}`;
-  actualizarKpisRoles();
 }
 async function cargarRoles() {
   try {
@@ -263,6 +263,58 @@ function abrirModalEdicion(rol) {
     rolModal.show();
   }
 }
+async function cambiarEstadoUsuario(id,estado){
+    const accion = (estado === 'Activo') ? 'desactivar' : 'reactivar';
+    const mensajeConfirmacion = (estado === 'Activo')
+        ? '¿Estás seguro de desactivar este usuario?'
+        : '¿Estás seguro de reactivar este usuario?';
+    if (!confirm(mensajeConfirmacion)) {
+            return;
+    }
+    try{
+      const endpoint=(estado==='Activo') ?`${USUARIOS_API}/eliminar/${id}`:`${USUARIOS_API}/reactivar/${id}`;
+      const response=await fetchConToken(endpoint,{method:'PATCH'})
+      if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || `Error al ${accion} al usuario`);
+      }
+      const respuesta=await response.json();
+      mostrarMensaje(respuesta.mensaje || `Usuario ${accion === 'desactivar' ? 'desactivado' : 'reactivado'} correctamente`, 'success');
+      await cargarUsuarios();
+      if (filtroRol !== 'all') {
+          renderUsuariosPorRol(filtroRol);
+      }
+      }catch(error){
+         console.error("Error al desactivar al usuario",error);
+         mostrarMensaje(error.message, 'danger');
+      }
+
+}
+function abrirModalCreacionUsuario() {
+    formUsuario.reset();
+    document.getElementById('usuarioId').value = '';
+    document.getElementById('usuarioModalLabel').textContent = 'Crear usuario';
+    if (usuarioModal) {
+        usuarioModal.show();
+    }
+}
+function abrirModalEdicionUsuario(usuario){
+     document.getElementById('usuarioId').value = usuario.id;
+     inputNombreUsuario.value = usuario.nombreUsuario;
+     inputCorreo.value = usuario.email;
+     inputContrasena.value = '';
+     const rolOption = Array.from(rol2.options)
+         .find(opt => opt.textContent === usuario.rol);
+     if (rolOption) {
+         document.getElementById('rol2').value = rolOption.value;
+     }
+     rol2.value = usuario.estado;
+     document.getElementById('usuarioModalLabel').textContent = 'Editar usuario';
+     if (usuarioModal) {
+         usuarioModal.show();
+     }
+}
+
 async function eliminarRol(id, nombreRol) {
   const mensaje = `⚠️ ADVERTENCIA\n\n` +
                   `Estás a punto de eliminar permanentemente el rol "${nombreRol}".\n\n` +
@@ -339,14 +391,19 @@ function inicializarEventos() {
   if (formUsuario) {
         formUsuario.addEventListener('submit', crearUsuarios);
   }
-  const btnCrearUsuarios = document.getElementById('btncrearUsuarios');
-      if (btnCrearUsuarios && usuarioModalElement) {
-          usuarioModalElement.addEventListener('show.bs.modal', () => {
-              formUsuario.reset();
-              document.getElementById('usuarioId').value = '';
-              document.getElementById('usuarioModalLabel').textContent = 'Crear usuario';
+   const btnCrearUsuarios = document.getElementById('btncrearUsuarios');
+      if (btnCrearUsuarios) {
+          btnCrearUsuarios.addEventListener('click', abrirModalCreacionUsuario);
+      }
+      if (inputNombre) {
+          inputNombre.addEventListener('change', () => {
+              if (rolEnEdicion) {
+                  return;
+              }
+              const seleccion = obtenerPermisosPorRolDefecto(inputNombre.value);
+              renderPermisosChecklist(seleccion);
           });
-     }
+      }
   if (formRol) {
     formRol.addEventListener('submit', guardarRol);
   }

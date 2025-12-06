@@ -74,7 +74,6 @@ public class UsuarioService {
                     .orElseThrow(() -> new IllegalArgumentException("El rol especificado no existe"));
             usuario.setEmail(request.getEmail());
             usuario.setNombreUsuario(request.getNombreUsuario());
-            // Solo actualizar contraseña si viene en el request
             if (request.getContrasena() != null && !request.getContrasena().isBlank()) {
                 usuario.setContrasena(request.getContrasena());
             }
