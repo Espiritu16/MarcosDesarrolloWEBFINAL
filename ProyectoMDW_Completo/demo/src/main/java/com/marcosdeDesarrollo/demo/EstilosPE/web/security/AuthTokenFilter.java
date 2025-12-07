@@ -1,5 +1,8 @@
 package com.marcosdeDesarrollo.demo.EstilosPE.web.security;
 
+import com.marcosdeDesarrollo.demo.EstilosPE.domain.repository.UsuarioRepository;
+import com.marcosdeDesarrollo.demo.EstilosPE.persistence.entity.Estado;
+import com.marcosdeDesarrollo.demo.EstilosPE.persistence.entity.Usuario;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,16 +22,17 @@ import java.io.IOException;
 @Component
 public class AuthTokenFilter extends OncePerRequestFilter {
     private final JwtUtils jwtUtils;
-
+    private final UsuarioRepository usuarioRepository;
     private final UserDetailsServiceImpl userDetailsService;
 
     public static Logger getLogger() {
         return LoggerFactory.getLogger(AuthTokenFilter.class);
     }
 
-    AuthTokenFilter(JwtUtils jwtUtils, UserDetailsServiceImpl userDetailsService) {
+    AuthTokenFilter(JwtUtils jwtUtils, UserDetailsServiceImpl userDetailsService,UsuarioRepository usuarioRepository) {
         this.jwtUtils = jwtUtils;
         this.userDetailsService = userDetailsService;
+        this.usuarioRepository=usuarioRepository;
     }
 
     // ELIMINAMOS POR COMPLETO LA LÓGICA DE 'excludedUrls' y 'shouldNotFilter'.
@@ -49,7 +53,15 @@ public class AuthTokenFilter extends OncePerRequestFilter {
             // Si hay un token y es válido, establecemos la autenticación.
             if (jwt != null && jwtUtils.validateJwtToken(jwt)) {
                 String username = jwtUtils.getUserNameFromJwtToken(jwt);
-
+                Usuario usuario = usuarioRepository.findByEmail(username)
+                        .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                if (usuario.getEstado() == Estado.Inactivo) {
+                    logger.warn("Usuario inactivo intentó acceder");
+                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"error\": \"Tu cuenta ha sido desactivada. Contacta al administrador.\"}");
+                    return;
+                }
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());

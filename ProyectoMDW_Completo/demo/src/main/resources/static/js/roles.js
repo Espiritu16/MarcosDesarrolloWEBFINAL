@@ -169,6 +169,10 @@ function renderUsuariosPorRol(rolFiltro) {
         return rolNombre.includes('vendedor');
       case 'contador':
         return rolNombre.includes('contador');
+       case 'otros':
+        return !rolNombre.includes('admin') &&
+                !rolNombre.includes('vendedor') &&
+                !rolNombre.includes('contador');
       default:
         return true;
     }
@@ -303,6 +307,7 @@ function abrirModalEdicionUsuario(usuario){
      inputNombreUsuario.value = usuario.nombreUsuario;
      inputCorreo.value = usuario.email;
      inputContrasena.value = '';
+     inputContrasena.placeholder='Si no quiere cambiar la contraseña, no escriba nada aquí';
      const rolOption = Array.from(rol2.options)
          .find(opt => opt.textContent === usuario.rol);
      if (rolOption) {

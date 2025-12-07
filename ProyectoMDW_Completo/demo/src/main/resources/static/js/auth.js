@@ -9,13 +9,23 @@ document.addEventListener('DOMContentLoaded', function () {
     const userName = sessionStorage.getItem('userName');
     const userRole = sessionStorage.getItem('userRole');
     const userEmail = sessionStorage.getItem('userEmail');
-
-    if (!token) {
+    const userEstado = sessionStorage.getItem('userEstado');
+      if (!token) {
         alert('Acceso denegado. Por favor, inicie sesión.');
         window.location.href = '/'; //Redirige al login si no hay un token para verificar
         return;
     }
-
+    if (userEstado === 'Inactivo') {
+        alert('Tu cuenta ha sido desactivada. Contacta al administrador para más información.');
+         // Limpiar sesión
+         sessionStorage.removeItem('jwtToken');
+         sessionStorage.removeItem('userName');
+         sessionStorage.removeItem('userRole');
+         sessionStorage.removeItem('userEmail');
+         sessionStorage.removeItem('userEstado');
+         window.location.href = '/';
+            return;
+    }
     const roleHomes = {
         'Administrador': '/administrador/',
         'Vendedor': '/vendedor/',
@@ -219,15 +229,22 @@ document.addEventListener("DOMContentLoaded", () => {
     return originalFetch(url, options).then(response => {
         // Manejar respuestas de error de autenticación
         if (response.status === 401 || response.status === 403) {
-              console.error('Token JWT inválido o expirado. Redirigiendo al login...');
+              response.json().then(data => {
+              const mensaje = data.error || 'Su sesión ha expirado. Por favor, inicie sesión nuevamente.';
               // Limpia sessionStorage
               sessionStorage.removeItem('jwtToken');
               sessionStorage.removeItem('userName');
               sessionStorage.removeItem('userRole');
               sessionStorage.removeItem('userEmail');
-              // Redirige al login
+              sessionStorage.removeItem('userEstado');
+              alert(mensaje);
+              window.location.href = '/';
+              }).catch(() => {
+              // Si no se puede leer el JSON, usar mensaje genérico
+              sessionStorage.clear();
               alert('Su sesión ha expirado. Por favor, inicie sesión nuevamente.');
               window.location.href = '/';
+              });
               // Retornar una promesa rechazada para detener el procesamiento
               return Promise.reject(new Error('Token expirado o inválido'));
         }

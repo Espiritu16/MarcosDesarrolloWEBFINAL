@@ -29,18 +29,23 @@ document.addEventListener("DOMContentLoaded", function() {
                 body: JSON.stringify(credentials)
             })
                 .then(response => {
-                    if (!response.ok) {
-                        let errorMessage = 'Credenciales inválidas. Verifique su email y contraseña.';
-                        if (response.status === 404) {
-                            errorMessage = 'Error de conexión (404). La URL no se encontró. Revisa el backend.';
-                        }
-                        throw new Error(errorMessage);
-                    }
-                    return response.json();
+                 if (!response.ok) {
+                    let errorMessage = 'Credenciales inválidas. Verifique su email y contraseña.';
+                     if (response.status === 404) {
+                        errorMessage = 'Error de conexión (404). La URL no se encontró. Revisa el backend.';
+                     }
+                     if(response.status===403){
+                        errorMessage='Cuenta inhabilitada.Contacta al administrador';
+                     }
+                     if(response.status===500){
+                        errorMessage='Error en el servidor.'
+                     }
+                    throw new Error(errorMessage);
+                 }
+                 return response.json();
                 })
                 .then(data => {
                     console.log("Login exitoso. Datos recibidos:", data);
-
                     sessionStorage.setItem('jwtToken', data.token);
                     sessionStorage.setItem('userName', data.email);
                     const roleMap = {
@@ -56,7 +61,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     const rolDisplay = roleMap[rolBackend] || data.rol || 'Sin rol';
                     sessionStorage.setItem('userRole', rolDisplay);
                     sessionStorage.setItem('userEmail', data.email);
-
+                    sessionStorage.setItem('userEstado', data.estado);
                     // --- redireccion de roles ---
                     switch (rolDisplay) {
                         case "Administrador":
