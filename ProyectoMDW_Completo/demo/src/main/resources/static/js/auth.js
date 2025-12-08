@@ -67,10 +67,17 @@ document.addEventListener('DOMContentLoaded', function () {
         'Vendedor': {
             canCreate: true,
             canEdit: true,
-            canDelete: true,
+            canDelete: false,
             pageExceptions: {
-                'Ventas_Insumos.html': { canCreate: true, canEdit: true, canDelete: false },
-                'Ventas_Productos.html': { canCreate: true, canEdit: true, canDelete: false }
+            '/vendedor/insumos': { canCreate: true, canEdit: true, canDelete: false },
+            'ventas_insumos.html': { canCreate: true, canEdit: true, canDelete: false },
+            'insumos':{ canCreate: true, canEdit: true, canDelete: false },
+            '/vendedor/productos':{ canCreate: true, canEdit: true, canDelete: false },
+            'ventas_productos.html':{ canCreate: true, canEdit: true, canDelete: false },
+            'productos':{ canCreate: true, canEdit: true, canDelete: false },
+            '/vendedor/compras':{canCreate:false,canEdit:false,canDelete:false,disableActions:true},
+            'compras_vendedor.html':{canCreate:false,canEdit:false,canDelete:false,disableActions:true},
+            'compras':{canCreate:false,canEdit:false,canDelete:false,disableActions:true}
             }
         },
         'Contador': {
@@ -80,7 +87,10 @@ document.addEventListener('DOMContentLoaded', function () {
             pageExceptions: {
                 '/contador/ventas': { canCreate: false, canEdit: false, canDelete: false, disableActions: true },
                 'ventasContador.html': { canCreate: false, canEdit: false, canDelete: false, disableActions: true },
-                'ventas': { canCreate: false, canEdit: false, canDelete: false, disableActions: true }
+                'ventas': { canCreate: false, canEdit: false, canDelete: false, disableActions: true },
+                '/contador/gastos': {canCreate:true,canEdit:true,canDelete: false},
+                'gastosContador.html': {canCreate:true,canEdit:true,canDelete: false},
+                'gastos': {canCreate:true,canEdit:true,canDelete: false}
             }
         },
         'Administrador': {
@@ -152,32 +162,31 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             });
     }
-    if (finalPermissions.canEdit === false) {
-        document.querySelectorAll('.btn-editar').forEach(btn => {
-            if (!btn) return;
-            if (disableActions) {
-                disableControl(btn);
-            } else {
-                btn.style.display = 'none';
-            }
-        });
-    }
-    if (finalPermissions.canDelete === false) {
-        document.querySelectorAll('.btn-eliminar').forEach(btn => {
-            if (!btn) return;
-            if (disableActions) {
-                disableControl(btn);
-            } else {
-                btn.style.display = 'none';
-            }
-        });
-    }
 
-    if (!disableActions && finalPermissions.canEdit === false && finalPermissions.canDelete === false) {
-        document.querySelectorAll('.col-acciones').forEach(col => col.style.display = 'none');
-        const observer = new MutationObserver(() => {
-            document.querySelectorAll('td.col-acciones').forEach(cell => cell.style.display = 'none');
-        });
+    if (!disableActions) {
+        const procesarBotones = () => {
+            if (finalPermissions.canEdit === false) {
+                document.querySelectorAll('.btn-editar').forEach(btn => {
+                    if (btn) btn.style.display = 'none';
+                });
+            }
+            if (finalPermissions.canDelete === false) {
+                document.querySelectorAll('.btn-eliminar').forEach(btn => {
+                    if (btn) btn.style.display = 'none';
+                });
+            }
+            if (finalPermissions.canEdit === false && finalPermissions.canDelete === false) {
+                document.querySelectorAll('.col-acciones, td.col-acciones').forEach(col => {
+                    col.style.display = 'none';
+                });
+            }
+        };
+
+        // Procesar botones existentes
+        procesarBotones();
+
+        // Observar cambios en la tabla para procesar botones nuevos
+        const observer = new MutationObserver(procesarBotones);
         const tableBody = document.querySelector('tbody');
         if (tableBody) {
             observer.observe(tableBody, { childList: true, subtree: true });

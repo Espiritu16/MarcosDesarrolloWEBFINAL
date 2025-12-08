@@ -320,7 +320,7 @@ function crearFilaProducto(producto) {
             <button class="btn btn-sm btn-outline-secondary btn-edit-producto" data-bs-toggle="modal" data-bs-target="#modalEditarProducto" type="button">
                 <i class="bi bi-pencil"></i>
             </button>
-            <button class="btn btn-sm ${claseAccion} btn-toggle-estado" type="button" title="${tituloAccion}">
+            <button class="btn btn-sm ${claseAccion} btn-eliminar btn-toggle-estado" type="button" title="${tituloAccion}">
                 <i class="bi ${iconoAccion}"></i>
             </button>
         </td>
