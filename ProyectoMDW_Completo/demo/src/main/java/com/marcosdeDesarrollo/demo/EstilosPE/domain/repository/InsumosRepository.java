@@ -11,4 +11,6 @@ public interface InsumosRepository extends JpaRepository<Insumos, Long>, JpaSpec
     long countByEstado(Estado estado);
 
     long countByStockActualLessThanEqual(int stock);
+
+    long countByEstadoAndStockActualLessThanEqual(Estado estado, int stock);
 }

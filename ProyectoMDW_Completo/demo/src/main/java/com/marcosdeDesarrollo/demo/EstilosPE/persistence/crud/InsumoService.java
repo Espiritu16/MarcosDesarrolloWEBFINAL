@@ -113,7 +113,7 @@ public class InsumoService {
 
     @Transactional(readOnly = true)
     public long contarStockBajo() {
-        return insumosRepository.countByStockActualLessThanEqual(STOCK_UMBRAL_BAJO);
+        return insumosRepository.countByEstadoAndStockActualLessThanEqual(Estado.Activo, STOCK_UMBRAL_BAJO);
     }
 
     private void aplicarDatos(Insumos insumo, InsumoRequestDto request, boolean esActualizacion) {
